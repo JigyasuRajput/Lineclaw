@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Talent Assistant Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-glow"></div>
+    <main class="shell">
+      <header class="hero">
+        <p class="kicker">LINE Manager Console</p>
+        <h1>Draft Candidate LINE Replies in Seconds</h1>
+        <p class="subtitle">
+          MVP utility for generating three personalized message candidates per campaign.
+        </p>
+      </header>
+
+      <section class="panel">
+        <form id="draft-form" class="form-grid">
+          <label>
+            <span>Audience Tag</span>
+            <input id="audience_tag" name="audience_tag" value="audition" required />
+          </label>
+
+          <label>
+            <span>Purpose</span>
+            <input
+              id="purpose"
+              name="purpose"
+              value="Send this week audition recommendations"
+              required
+            />
+          </label>
+
+          <label>
+            <span>Tone</span>
+            <select id="tone" name="tone">
+              <option value="professional" selected>Professional</option>
+              <option value="friendly">Friendly</option>
+              <option value="urgent">Urgent</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Language</span>
+            <select id="language" name="language">
+              <option value="ja" selected>Japanese</option>
+              <option value="en">English</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Admin Key (optional)</span>
+            <input id="admin_key" name="admin_key" type="password" placeholder="x-admin-key" />
+          </label>
+
+          <button id="submit-btn" type="submit">Generate 3 Candidates</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="result-header">
+          <h2>Recommended Sentences</h2>
+          <span id="status" class="status idle">Idle</span>
+        </div>
+        <ol id="candidates" class="candidates">
+          <li class="placeholder">Generate drafts to preview recommendations.</li>
+        </ol>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

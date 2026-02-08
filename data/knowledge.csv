@@ -1,0 +1,5 @@
+item_id,category,title,summary,eligibility,location,deadline_iso,url,tags,priority
+K001,audition,Tokyo Voice Audition 2026,Anime voice role shortlist,JP work permit required,Tokyo,2026-04-30,https://example.com/audition/tokyo-voice,"audition|tokyo|voice",3
+K002,job,Remote Creator School Scholarship,Online training for creators,Beginner-friendly,Online,2026-05-20,https://example.com/school/creator-scholarship,"school|online|training",2
+K003,job,Osaka Commercial Casting Call,Brand commercial shooting,Prior camera experience preferred,Osaka,2026-03-25,https://example.com/job/osaka-commercial,"job|commercial|osaka",2
+K004,school,LA Weekend Acting Workshop,Short intensive acting workshop,English communication required,Los Angeles,2026-03-10,https://example.com/school/la-weekend,"school|acting|losangeles",1
