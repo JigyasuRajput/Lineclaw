@@ -9,11 +9,21 @@ const {
 } = require("../../lib/utils/http");
 
 const QUICK_REPLIES = [
-  { type: "action", action: { type: "message", label: "🔍 Talent Check", text: "タレント検索" } },
+  { type: "action", action: { type: "message", label: "🔍 Talent Check", text: "Show me available talents" } },
   { type: "action", action: { type: "message", label: "⚠️ Alerts", text: "アラート" } },
-  { type: "action", action: { type: "message", label: "⚡ Risk Check", text: "リスクチェック" } },
-  { type: "action", action: { type: "message", label: "👤 Expert", text: "専門家を探す" } },
+  { type: "action", action: { type: "message", label: "⚡ High Risk", text: "Show high risk talents" } },
+  { type: "action", action: { type: "message", label: "👤 Experts", text: "Show all experts" } },
 ];
+
+// Button command keywords
+const BUTTON_COMMANDS = {
+  "タレント検索": "talent_list",
+  "show me available talents": "talent_list",
+  "リスクチェック": "risk_list",
+  "show high risk talents": "risk_list",
+  "専門家を探す": "expert_list",
+  "show all experts": "expert_list",
+};
 
 // Greeting keywords (English and Japanese)
 const GREETING_KEYWORDS = [
@@ -120,6 +130,49 @@ function createWebhookHandler(containerProvider = getContainer) {
             userId,
             status: "processed",
             action: "greeting",
+          });
+          continue;
+        }
+
+        // Handle button commands
+        const buttonCommand = BUTTON_COMMANDS[messageTextLower] || BUTTON_COMMANDS[messageText];
+        if (buttonCommand) {
+          let response = "";
+
+          if (buttonCommand === "talent_list") {
+            const talents = container.castingService.getAllTalents();
+            const talentList = talents.slice(0, 10).map((t, i) => {
+              const riskEmoji = t.risk_level === "高" ? "🔴" : t.risk_level === "中" ? "🟡" : "🟢";
+              return `${i + 1}. ${riskEmoji} ${t.name} (${t.name_en || "-"})`;
+            }).join("\n");
+            response = `📋 TALENT LIST / タレント一覧\n━━━━━━━━━━━━━━━━━━━━\n\n${talentList}\n\n━━━━━━━━━━━━━━━━━━━━\n💡 Ask about any talent:\n"Can [name] do [brand]?"\n"[名前]のリスクを教えて"`;
+          } else if (buttonCommand === "risk_list") {
+            const highRisk = container.castingService.getTalentsByRisk("high");
+            const medRisk = container.castingService.getTalentsByRisk("medium");
+
+            let riskList = "🔴 HIGH RISK / 高リスク:\n";
+            riskList += highRisk.map(t => `・${t.name} (${t.name_en}) - ${t.scandal_history}`).join("\n") || "なし";
+            riskList += "\n\n🟡 MEDIUM RISK / 中リスク:\n";
+            riskList += medRisk.map(t => `・${t.name} (${t.name_en}) - ${t.scandal_history}`).join("\n") || "なし";
+
+            response = `⚠️ RISK OVERVIEW / リスク一覧\n━━━━━━━━━━━━━━━━━━━━\n\n${riskList}\n\n━━━━━━━━━━━━━━━━━━━━\n💡 Get details: "[name] risk?"`;
+          } else if (buttonCommand === "expert_list") {
+            const experts = container.castingService.experts;
+            const expertList = experts.map(e =>
+              `👤 ${e.name} (${e.name_en || "-"})\n   📂 ${e.department}\n   🎯 ${e.specialization}\n   📧 ${e.contact_info}`
+            ).join("\n\n");
+            response = `🎯 EXPERT DIRECTORY / 専門家一覧\n━━━━━━━━━━━━━━━━━━━━\n\n${expertList}`;
+          }
+
+          if (event.replyToken && response) {
+            await container.lineClient.replyWithQuickReplies(event.replyToken, response, QUICK_REPLIES);
+            summary.replied += 1;
+          }
+          summary.results.push({
+            eventId: event.webhookEventId,
+            userId,
+            status: "processed",
+            action: buttonCommand,
           });
           continue;
         }
