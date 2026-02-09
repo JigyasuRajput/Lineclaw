@@ -1,0 +1,6 @@
+contract_id,talent_name,client_name,brand,category,start_date,end_date,exclusivity_type,competitive_restrictions,renewal_status,assigned_manager
+C001,田中太郎,サントリー,ザ・プレミアム・モルツ,酒類,2025-01-01,2026-03-15,完全独占,酒類全般,更新検討中,山田花子
+C002,田中太郎,トヨタ,クラウン,自動車,2024-06-01,2026-06-01,カテゴリ独占,国産自動車,継続予定,山田花子
+C003,鈴木花子,資生堂,SHISEIDO,化粧品,2024-04-01,2026-02-28,完全独占,化粧品全般,期限切れ間近,鈴木一郎
+C004,鈴木花子,パナソニック,Panasonic,家電,2025-03-01,2027-03-01,カテゴリ独占,なし,継続予定,鈴木一郎
+C005,渡辺翔,アディダス,adidas Originals,スポーツ,2024-09-01,2026-09-01,グローバル独占,スポーツブランド全般,継続予定,田中次郎
