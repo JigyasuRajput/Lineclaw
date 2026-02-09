@@ -20,44 +20,32 @@ function buildTestContainer() {
       line_user_id: "U1001",
       display_name: "Yuki",
       language_pref: "ja",
-      interest_tags: ["audition", "tokyo"],
+      interest_tags: ["casting", "talent"],
       location: "Tokyo",
-      career_goal: "voice actor",
+      career_goal: "casting staff",
     },
     {
       line_user_id: "U1002",
       display_name: "Emma",
       language_pref: "en",
-      interest_tags: ["school", "acting"],
-      location: "Los Angeles",
-      career_goal: "screen actor",
+      interest_tags: ["casting", "talent"],
+      location: "Tokyo",
+      career_goal: "casting staff",
     },
   ]);
 
   container.repository.upsertKnowledge([
     {
       item_id: "K001",
-      category: "audition",
-      title: "Tokyo Voice Audition",
-      summary: "Animation role",
-      eligibility: "Beginner welcome",
+      category: "casting",
+      title: "Talent Casting Guidelines",
+      summary: "Guidelines for casting",
+      eligibility: "All staff",
       location: "Tokyo",
       deadline_iso: "2026-12-01",
-      url: "https://example.com/tokyo-audition",
-      tags: ["audition", "tokyo"],
+      url: "https://example.com/casting-guide",
+      tags: ["casting", "guidelines"],
       priority: 3,
-    },
-    {
-      item_id: "K002",
-      category: "school",
-      title: "LA Acting School Weekend",
-      summary: "On-camera basics",
-      eligibility: "English required",
-      location: "Los Angeles",
-      deadline_iso: "2026-09-01",
-      url: "https://example.com/la-school",
-      tags: ["school", "acting"],
-      priority: 2,
     },
   ]);
 
@@ -76,21 +64,81 @@ function makeEvent(overrides = {}) {
     message: {
       id: overrides.messageId || `m_${Date.now()}_${Math.random()}`,
       type: "text",
-      text: overrides.text || "Any auditions in Tokyo?",
+      text: overrides.text || "タレントの情報を教えて",
     },
     replyToken: overrides.replyToken || "dummy-reply-token",
   };
 }
 
-test("FAQ inquiry with profile tags returns personalized answer", async () => {
+test("Talent NG check query is classified correctly", async () => {
   const container = buildTestContainer();
-  const result = await container.assistantService.handleLineMessageEvent(
-    makeEvent({ userId: "U1001", text: "Any audition opportunities in Tokyo this week?" })
-  );
+  const result = await container.classifier.classify({
+    message: "田中太郎はビールのCMに使えますか？",
+    profile: null,
+    recentContext: [],
+  });
 
-  assert.equal(result.action, "answer");
-  assert.match(result.replyText, /Yuki/);
-  assert.match(result.replyText, /Tokyo|東京/);
+  assert.equal(result.intent, "talent_ng_check");
+  assert.ok(result.confidence >= 0.7);
+});
+
+test("Scandal risk check query is classified correctly", async () => {
+  const container = buildTestContainer();
+  const result = await container.classifier.classify({
+    message: "佐藤健太のリスクを教えて",
+    profile: null,
+    recentContext: [],
+  });
+
+  assert.equal(result.intent, "scandal_risk_check");
+  assert.ok(result.confidence >= 0.7);
+});
+
+test("Expert finder query is classified correctly", async () => {
+  const container = buildTestContainer();
+  const result = await container.classifier.classify({
+    message: "韓国タレントに詳しい人は？",
+    profile: null,
+    recentContext: [],
+  });
+
+  assert.equal(result.intent, "expert_finder");
+  assert.ok(result.confidence >= 0.7);
+});
+
+test("Contract status query is classified correctly", async () => {
+  const container = buildTestContainer();
+  const result = await container.classifier.classify({
+    message: "鈴木花子の契約状況は？",
+    profile: null,
+    recentContext: [],
+  });
+
+  assert.equal(result.intent, "contract_status");
+  assert.ok(result.confidence >= 0.7);
+});
+
+test("Casting service returns talent availability", async () => {
+  const container = buildTestContainer();
+  const result = container.castingService.checkTalentAvailability("田中太郎", "アサヒビール", null);
+
+  assert.equal(result.available, false);
+  assert.ok(result.reason.includes("NG"));
+});
+
+test("Casting service returns available status for valid talent/brand", async () => {
+  const container = buildTestContainer();
+  const result = container.castingService.checkTalentAvailability("山本美咲", "新規ブランド", null);
+
+  assert.equal(result.available, true);
+  assert.ok(result.talent);
+});
+
+test("Contract alert service detects expiring contracts", async () => {
+  const container = buildTestContainer();
+  const expiring = container.contractAlertService.getExpiringContracts(60);
+
+  assert.ok(Array.isArray(expiring));
 });
 
 test("Unknown inquiry triggers clarifying question", async () => {
@@ -100,7 +148,7 @@ test("Unknown inquiry triggers clarifying question", async () => {
   );
 
   assert.equal(result.action, "clarify");
-  assert.match(result.replyText.toLowerCase(), /share|help|教えて|希望/);
+  assert.match(result.replyText.toLowerCase(), /share|help|教えて|タレント|ブランド/);
 });
 
 test("Low-confidence inquiry escalates and logs queue item", async () => {
@@ -125,25 +173,9 @@ test("Sensitive inquiry escalates without suggested advice", async () => {
   assert.equal(result.escalation.suggested_reply, "");
 });
 
-test("JP and EN inquiries each receive same-language replies", async () => {
-  const container = buildTestContainer();
-
-  const jaResult = await container.assistantService.handleLineMessageEvent(
-    makeEvent({ userId: "U1001", text: "東京のオーディションありますか？" })
-  );
-  assert.equal(jaResult.action, "answer");
-  assert.match(jaResult.replyText, /[\u3040-\u30ff\u4e00-\u9faf]/);
-
-  const enResult = await container.assistantService.handleLineMessageEvent(
-    makeEvent({ userId: "U1002", text: "Any acting school options in Los Angeles?" })
-  );
-  assert.equal(enResult.action, "answer");
-  assert.match(enResult.replyText, /Hi Emma|Location|Deadline/);
-});
-
 test("Duplicate webhook event is idempotent", async () => {
   const container = buildTestContainer();
-  const event = makeEvent({ userId: "U1001", text: "Any auditions?", webhookEventId: "evt_dup_1" });
+  const event = makeEvent({ userId: "U1001", text: "タレントの契約について", webhookEventId: "evt_dup_1" });
 
   const first = await container.assistantService.handleLineMessageEvent(event);
   const second = await container.assistantService.handleLineMessageEvent(event);
@@ -172,7 +204,7 @@ test("Retention cleanup removes expired conversation logs", async () => {
     line_user_id: "U1001",
     user_text: "old",
     assistant_text: "old",
-    intent: "faq",
+    intent: "general_casting_query",
     confidence: 0.9,
     action: "answered",
     expires_at: "2020-01-01T00:00:00.000Z",
