@@ -9,20 +9,26 @@ const {
 } = require("../../lib/utils/http");
 
 const QUICK_REPLIES = [
-  { type: "action", action: { type: "message", label: "🔍 Talent Check", text: "Show me available talents" } },
-  { type: "action", action: { type: "message", label: "⚠️ Alerts", text: "アラート" } },
-  { type: "action", action: { type: "message", label: "⚡ High Risk", text: "Show high risk talents" } },
-  { type: "action", action: { type: "message", label: "👤 Experts", text: "Show all experts" } },
+  { type: "action", action: { type: "message", label: "📊 ダッシュボード", text: "ダッシュボード" } },
+  { type: "action", action: { type: "message", label: "⚠️ アラート", text: "アラート" } },
+  { type: "action", action: { type: "message", label: "🎯 おすすめ", text: "おすすめタレント" } },
+  { type: "action", action: { type: "message", label: "👥 専門家", text: "専門家一覧" } },
 ];
 
 // Button command keywords
 const BUTTON_COMMANDS = {
   "タレント検索": "talent_list",
-  "show me available talents": "talent_list",
+  "タレント一覧": "talent_list",
   "リスクチェック": "risk_list",
   "show high risk talents": "risk_list",
   "専門家を探す": "expert_list",
+  "専門家一覧": "expert_list",
   "show all experts": "expert_list",
+  "ダッシュボード": "dashboard",
+  "dashboard": "dashboard",
+  "おすすめタレント": "recommend",
+  "おすすめ": "recommend",
+  "recommend": "recommend",
 };
 
 // Greeting keywords (English and Japanese)
@@ -32,22 +38,21 @@ const GREETING_KEYWORDS = [
   "start", "help", "menu", "始める", "ヘルプ", "メニュー"
 ];
 
-const GREETING_RESPONSE = `👋 Welcome to Hakuhodo Casting Assistant!
-ようこそ！キャスティングアシスタントです。
+const GREETING_RESPONSE = `👋 博報堂キャスティングアシスタントへようこそ！
 
-I can help you with:
-• 🔍 Talent availability check / タレント起用確認
-• ⚠️ Contract alerts / 契約アラート
-• ⚡ Scandal risk assessment / リスク評価
-• 👤 Find internal experts / 専門家検索
+このボットでできること:
+• 📊 ダッシュボード → 全体状況の確認
+• ⚠️ アラート → 契約期限アラート
+• 🎯 タレント起用確認 → NG条件・リスクチェック
+• 👥 専門家検索 → 担当者の連絡先
 
-Try asking:
-• "Can Taro Tanaka do a beer ad?"
-• "田中太郎はビールのCMに使えますか？"
-• "alerts" / "アラート"
-• "Korean talent expert" / "韓国タレントに詳しい人"
+例文:
+• 「田中太郎はビールのCMに使えますか？」
+• 「佐藤健太のリスクを教えてください」
+• 「韓国タレントに詳しい人」
+• 「おすすめタレント」
 
-Use the buttons below to get started! 👇`;
+下のボタンからお試しください 👇`;
 
 function createWebhookHandler(containerProvider = getContainer) {
   return async function webhookHandler(req, res) {
@@ -143,25 +148,34 @@ function createWebhookHandler(containerProvider = getContainer) {
             const talents = container.castingService.getAllTalents();
             const talentList = talents.slice(0, 10).map((t, i) => {
               const riskEmoji = t.risk_level === "高" ? "🔴" : t.risk_level === "中" ? "🟡" : "🟢";
-              return `${i + 1}. ${riskEmoji} ${t.name} (${t.name_en || "-"})`;
+              return `${i + 1}. ${riskEmoji} ${t.name}（${t.name_en || "-"}）`;
             }).join("\n");
-            response = `📋 TALENT LIST / タレント一覧\n━━━━━━━━━━━━━━━━━━━━\n\n${talentList}\n\n━━━━━━━━━━━━━━━━━━━━\n💡 Ask about any talent:\n"Can [name] do [brand]?"\n"[名前]のリスクを教えて"`;
+            response = `📋 タレント一覧\n━━━━━━━━━━━━━━━━━━━━━━\n\n${talentList}\n\n━━━━━━━━━━━━━━━━━━━━━━\n💡 タレント名を入力して詳細をお確かめください\n例:「田中太郎はビールに使える？」`;
           } else if (buttonCommand === "risk_list") {
             const highRisk = container.castingService.getTalentsByRisk("high");
             const medRisk = container.castingService.getTalentsByRisk("medium");
 
-            let riskList = "🔴 HIGH RISK / 高リスク:\n";
-            riskList += highRisk.map(t => `・${t.name} (${t.name_en}) - ${t.scandal_history}`).join("\n") || "なし";
-            riskList += "\n\n🟡 MEDIUM RISK / 中リスク:\n";
-            riskList += medRisk.map(t => `・${t.name} (${t.name_en}) - ${t.scandal_history}`).join("\n") || "なし";
+            let riskList = "🔴 高リスク:\n";
+            riskList += highRisk.map(t => `・${t.name}（${t.name_en}）\n  ${t.scandal_history}`).join("\n") || "なし";
+            riskList += "\n\n🟡 中リスク:\n";
+            riskList += medRisk.map(t => `・${t.name}（${t.name_en}）\n  ${t.scandal_history}`).join("\n") || "なし";
 
-            response = `⚠️ RISK OVERVIEW / リスク一覧\n━━━━━━━━━━━━━━━━━━━━\n\n${riskList}\n\n━━━━━━━━━━━━━━━━━━━━\n💡 Get details: "[name] risk?"`;
+            response = `⚠️ リスク一覧\n━━━━━━━━━━━━━━━━━━━━━━\n\n${riskList}\n\n━━━━━━━━━━━━━━━━━━━━━━\n💡「○○のリスク」で詳細確認`;
           } else if (buttonCommand === "expert_list") {
             const experts = container.castingService.experts;
             const expertList = experts.map(e =>
-              `👤 ${e.name} (${e.name_en || "-"})\n   📂 ${e.department}\n   🎯 ${e.specialization}\n   📧 ${e.contact_info}`
+              `👤 ${e.name}（${e.name_en || "-"}）\n   📂 ${e.department}\n   🎯 ${e.specialization}\n   📧 ${e.contact_info}`
             ).join("\n\n");
-            response = `🎯 EXPERT DIRECTORY / 専門家一覧\n━━━━━━━━━━━━━━━━━━━━\n\n${expertList}`;
+            response = `🎯 専門家一覧\n━━━━━━━━━━━━━━━━━━━━━━\n\n${expertList}\n\n━━━━━━━━━━━━━━━━━━━━━━\n💡「韓国タレントに詳しい人」のように検索可能`;
+          } else if (buttonCommand === "dashboard") {
+            const stats = container.castingService.getDashboard();
+            response = container.castingService.formatDashboardResponse(stats);
+          } else if (buttonCommand === "recommend") {
+            const talents = container.castingService.recommendTalents({
+              cleanImage: true,
+              limit: 3
+            });
+            response = container.castingService.formatRecommendationResponse(talents, "クリーンイメージ");
           }
 
           if (event.replyToken && response) {
