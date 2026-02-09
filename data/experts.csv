@@ -1,4 +1,8 @@
-expert_id,name,department,specialization,talent_count,recent_deals,contact_info
-E001,山田花子,タレント第一部,国内俳優・女優,15,資生堂/トヨタ/サントリー,yamada@hakuhodo.co.jp
-E002,鈴木一郎,タレント第二部,韓国タレント・K-POP,8,サムスン/LG/現代,suzuki@hakuhodo.co.jp
-E003,佐々木健,リスク管理部,スキャンダル対応・危機管理,全社対応,週刊誌対応/SNS炎上対策,sasaki@hakuhodo.co.jp
+expert_id,name,name_en,department,specialization,specialization_en,talent_count,recent_deals,contact_info
+E001,山田花子,Hanako Yamada,タレント第一部,国内俳優・女優,Japanese Actors/Actresses,15,資生堂/トヨタ/サントリー/メルセデス,yamada@hakuhodo.co.jp
+E002,鈴木一郎,Ichiro Suzuki,タレント第二部,アイドル・グループタレント,Idols and Group Talents,12,花王/日清/パナソニック,suzuki@hakuhodo.co.jp
+E003,佐々木健,Ken Sasaki,リスク管理部,スキャンダル対応・危機管理,Scandal Response/Crisis Management,全社対応,週刊誌対応/SNS炎上対策/法的対応,sasaki@hakuhodo.co.jp
+E004,朴泰俊,Taejun Park,国際タレント部,韓国タレント・K-POP,Korean Talents/K-POP,8,サムスン/LG/現代/HYBE,park@hakuhodo.co.jp
+E005,木村美香,Mika Kimura,ファッション部,モデル・ファッションタレント,Models/Fashion Talents,10,ユニクロ/ディオール/シャネル/ルイヴィトン,kimura@hakuhodo.co.jp
+E006,田中次郎,Jiro Tanaka,スポーツ部,アスリート・スポーツタレント,Athletes/Sports Talents,7,アディダス/ミズノ/アシックス/ナイキ,tanaka.j@hakuhodo.co.jp
+E007,高田明,Akira Takada,法務部,契約法務・権利管理,Contract Law/Rights Management,全社対応,独占契約/競合条項/肖像権,takada@hakuhodo.co.jp
