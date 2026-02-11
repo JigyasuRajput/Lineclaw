@@ -38,21 +38,22 @@ const GREETING_KEYWORDS = [
   "start", "help", "menu", "始める", "ヘルプ", "メニュー"
 ];
 
-const GREETING_RESPONSE = `👋 博報堂キャスティングアシスタントへようこそ！
+const GREETING_RESPONSE = `👋 博報堂キャスティングアシスタント
+   Hakuhodo Casting Assistant
 
-このボットでできること:
-• 📊 ダッシュボード → 全体状況の確認
-• ⚠️ アラート → 契約期限アラート
-• 🎯 タレント起用確認 → NG条件・リスクチェック
-• 👥 専門家検索 → 担当者の連絡先
+このボットでできること / What this bot can do:
+• 📊 ダッシュボード / Dashboard → 全体状況 / Overview
+• ⚠️ アラート / Alerts → 契約期限 / Contract Expiry
+• 🎯 おすすめ / Recommend → タレント推薦 / Talent Picks
+• 👥 専門家 / Experts → 担当者検索 / Find Contacts
 
-例文:
+例文 / Examples:
 • 「田中太郎はビールのCMに使えますか？」
 • 「佐藤健太のリスクを教えてください」
 • 「韓国タレントに詳しい人」
 • 「おすすめタレント」
 
-下のボタンからお試しください 👇`;
+下のボタンからお試しください / Tap a button below 👇`;
 
 function createWebhookHandler(containerProvider = getContainer) {
   return async function webhookHandler(req, res) {
@@ -245,16 +246,18 @@ function createWebhookHandler(containerProvider = getContainer) {
 
         // Handle general casting query (if classified as such, reply helpfully)
         if (classification.intent === "general_casting_query" || classification.confidence < 0.5) {
-          const helpResponse = `🤔 I'm not sure what you're asking about.
-よく分かりませんでした。
+          const helpResponse = `🤔 よく分かりませんでした。
+   I'm not sure what you're asking about.
 
-Try one of these:
-• Ask about a talent: "Can [name] do [brand]?"
-• Check risk: "[name] risk?" / "[名前]のリスク"
-• Find expert: "Korean talent expert"
-• See alerts: "alerts" / "アラート"
+以下をお試しください / Try one of these:
+• 「田中太郎はビールに使えますか？」→ NG Check
+• 「佐藤健太のリスク」→ Risk Assessment
+• 「韓国タレントに詳しい人」→ Expert Search
+• 「アラート」→ Contract Alerts
+• 「おすすめタレント」→ Recommendations
 
-タレント名を含めて質問してください！`;
+タレント名を含めてご質問ください。
+Please include a talent name in your question.`;
 
           if (event.replyToken) {
             await container.lineClient.replyWithQuickReplies(event.replyToken, helpResponse, QUICK_REPLIES);
